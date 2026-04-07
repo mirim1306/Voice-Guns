@@ -1,0 +1,21 @@
+voice-shooter-game/
+│
+├── server/                # Python 백엔드 관련 파일
+│   ├── main.py            # FastAPI 및 Socket.io 서버 로직
+│   ├── manager.py         # 게임 방(Room) 및 플레이어 관리 로직
+│   └── requirements.txt   # 설치 필요한 라이브러리 목록
+│                          ⭐pip install -r server/requirements.txt <<- 터미널에서 꼭 해야함.
+│
+├── client/                # Frontend 관련 파일 (Phaser.js)
+│   ├── index.html         # 게임이 실행될 메인 페이지
+│   ├── css/
+│   │   └── style.css      # 간단한 UI 스타일링
+│   └── js/
+│       ├── game.js        # Phaser 게임 메인 설정 및 씬(Scene)
+│       ├── player.js      # 플레이어 캐릭터 및 물리 로직
+│       ├── speech.js      # Web Speech API 음성 인식 로직
+│       └── socket.js      # 서버와의 실시간 통신 클라이언트
+│
+└── assets/                # 게임에 사용될 이미지, 사운드 소스
+    ├── sprites/           # 캐릭터, 총알 이미지
+    └── sounds/            # 효과음
