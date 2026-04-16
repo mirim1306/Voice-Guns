@@ -1,0 +1,115 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+
+#game-container {
+  position: relative;
+}
+
+#game-container canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ── HUD overlay ── */
+#hud {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  pointer-events: none;
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+/* ── 음성 감지 인디케이터 ── */
+#voice-indicator {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 60, 60, 0.15);
+  border: 1px solid rgba(255, 60, 60, 0.5);
+  border-radius: 20px;
+  padding: 6px 18px;
+  color: #ff6060;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+#voice-indicator.active {
+  opacity: 1;
+  animation: pulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { background: rgba(255, 60, 60, 0.15); }
+  to   { background: rgba(255, 60, 60, 0.35); }
+}
+
+/* ── 마이크 시작 버튼 ── */
+#mic-start-btn {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  padding: 7px 22px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 50;
+}
+
+#mic-start-btn:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ── 라운드 결과 오버레이 ── */
+#round-result {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#round-result.active {
+  opacity: 1;
+}
+
+#round-result h1 {
+  font-size: 48px;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px currentColor;
+}
+
+#round-result p {
+  font-size: 16px;
+  opacity: 0.6;
+  margin-top: 8px;
+  letter-spacing: 0.1em;
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOICE ROUNDS</title>
+
+  <!-- ───── External Libraries ───── -->
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+  <div id="game-container">
+    <div id="hud">
+      <div id="voice-indicator">🎤 FIRE DETECTED</div>
+    </div>
+    <div id="round-result">
+      <h1 id="round-winner-text">P1 WINS</h1>
+      <p>NEXT ROUND IN 3...</p>
+    </div>
+  </div>
+
+  <!-- ───── Game Modules (순서 중요) ───── -->
+  <script src="js/player.js"></script>
+  <script src="js/bullet.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/socket.js"></script>
+  <script src="js/game.js"></script>
+
+</body>
+</html>
