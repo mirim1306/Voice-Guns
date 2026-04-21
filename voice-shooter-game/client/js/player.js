@@ -83,7 +83,6 @@ class Player {
   // ── 충돌 감지 ────────────────────────────────────────────────
 
   _setupCollision() {
-    // 단방향 플랫폼 통과: collisionstart에서 pair.isActive = false
     this.scene.matter.world.on('collisionstart', (event) => {
       event.pairs.forEach((pair) => {
         const isMe  = pair.bodyA === this.body || pair.bodyB === this.body;
@@ -91,29 +90,33 @@ class Player {
         const other = pair.bodyA === this.body ? pair.bodyB : pair.bodyA;
         if (!other.isStatic) return;
 
-        const label = other.label ?? '';
+        const label        = other.label ?? '';
+        const playerBottom = this.body.position.y + CHAR_DISPLAY_SIZE / 2;
+        const platformTop  = other.position.y - 9;
 
-        // 공중 플랫폼 처리
+        // ── 공중 플랫폼(isOneWay) 처리 ──
         if (other.isOneWay) {
-          const playerBottom = this.body.position.y + CHAR_DISPLAY_SIZE / 2;
-          const platformTop  = other.position.y - 9;
-          const risingUp     = this.body.velocity.y < 0;
-          const comingBelow  = playerBottom > platformTop + 5;
+          const passingThrough =
+            this._fallingThrough ||
+            this.body.velocity.y < -0.5 ||
+            playerBottom > platformTop + 8;
 
-          // 아래서 올라오는 중이거나 내려가기 모드면 통과
-          if (risingUp || comingBelow || this._fallingThrough) {
+          if (passingThrough) {
             pair.isActive = false;
             return;
           }
+
+          // 위에서 착지 → groundContacts 증가, _onGroundFloor는 false 유지
+          this._groundContacts++;
+          return;
         }
 
-        // 내려가기 모드면 플랫폼 충돌 무시
+        // ── 일반 ground / 정적 바디 ──
         if (this._fallingThrough && label !== 'ground') {
           pair.isActive = false;
           return;
         }
 
-        // groundContacts 카운트 (아래쪽 바닥만)
         const dy = other.position.y - this.body.position.y;
         if (dy > 0) {
           this._groundContacts++;
@@ -128,14 +131,23 @@ class Player {
         if (!isMe) return;
         const other = pair.bodyA === this.body ? pair.bodyB : pair.bodyA;
         if (!other.isStatic) return;
+
+        const label = other.label ?? '';
+
+        if (other.isOneWay) {
+          this._groundContacts = Math.max(0, this._groundContacts - 1);
+          return;
+        }
+
         const dy = other.position.y - this.body.position.y;
         if (dy > 0) {
           this._groundContacts = Math.max(0, this._groundContacts - 1);
-          if ((other.label ?? '') === 'ground') this._onGroundFloor = false;
+          if (label === 'ground') this._onGroundFloor = false;
         }
       });
     });
   }
+
 
   // ── 컨트롤 ───────────────────────────────────────────────────
 
@@ -247,7 +259,7 @@ class Player {
       }
     }
 
-    // 내려가기: 공중 플랫폼 위에 있을 때만 (최하단 바닥은 제외)
+    // 내려가기: 공중 플랫폼 위에 있을 때 (최하단 바닥은 제외)
     const downPressed = Phaser.Input.Keyboard.JustDown(this.keys.down);
     if (downPressed && this._onGround && !this._onGroundFloor) {
       this._fallThrough();
@@ -270,11 +282,11 @@ class Player {
     // 아래 방향 속도 주어서 플랫폼 아래로 통과
     Phaser.Physics.Matter.Matter.Body.setVelocity(this.body, {
       x: this.body.velocity.x,
-      y: 8,
+      y: 10,
     });
 
-    // 250ms 후 플래그 해제 (충분히 내려간 뒤)
-    this.scene.time.delayedCall(250, () => {
+    // 300ms 후 플래그 해제 (충분히 내려간 뒤)
+    this.scene.time.delayedCall(300, () => {
       this._fallingThrough = false;
     });
   }
