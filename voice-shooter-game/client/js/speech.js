@@ -1,5 +1,4 @@
 /**
- * speech.js
  * ─────────────────────────────────────────────────────────────────
  * Phase 3: 음성 인식 시스템
  * - P1, P2 각자 독립적인 SpeechRecognition 인스턴스
@@ -10,11 +9,11 @@
  */
 
 // ── 발사 키워드 설정 ───────────────────────────────────────────────
+// 키워드는 index.html 시작 화면에서 window.VOICE_KEYWORDS 로 주입됨
+// 폴백: 기본값 (직접 실행 시 사용)
 const SPEECH_CONFIG = {
-  // P1 발사 키워드 (소문자 비교)
-  P1_FIRE_KEYWORDS: ['빵', '발사', '슛', '쏴', 'fire', 'shoot', 'bang'],
-  // P2 발사 키워드
-  P2_FIRE_KEYWORDS: ['빵', '발사', '슛', '쏴', 'fire', 'shoot', 'bang'],
+  P1_FIRE_KEYWORDS: ['불', 'fire'],
+  P2_FIRE_KEYWORDS: ['빵', 'shoot'],
 
   // 인식 언어
   LANG: 'ko-KR',
@@ -76,8 +75,15 @@ class SpeechManager {
 
   // ── 시작 ──────────────────────────────────────────────────────
 
-  /** P1, P2 음성 인식 모두 시작 */
+  /** P1, P2 음성 인식 모두 시작 (시작 화면 키워드 반영) */
   startAll() {
+    // 시작 화면에서 입력한 키워드가 있으면 덮어씌움
+    if (window.VOICE_KEYWORDS) {
+      SPEECH_CONFIG.P1_FIRE_KEYWORDS = window.VOICE_KEYWORDS.p1;
+      SPEECH_CONFIG.P2_FIRE_KEYWORDS = window.VOICE_KEYWORDS.p2;
+      console.log('[Speech] P1 키워드:', SPEECH_CONFIG.P1_FIRE_KEYWORDS);
+      console.log('[Speech] P2 키워드:', SPEECH_CONFIG.P2_FIRE_KEYWORDS);
+    }
     this.startP1();
     this.startP2();
   }

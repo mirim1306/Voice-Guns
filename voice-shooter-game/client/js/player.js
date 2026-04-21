@@ -1,5 +1,4 @@
 /**
- * player.js
  * ─────────────────────────────────────────────────────────────────
  * - Char.png 스프라이트 (flipX로 방향 전환)
  * - Gun.png 스프라이트 (facingDir 방향 수평 고정)
@@ -92,7 +91,7 @@ class Player {
       },
     });
 
-    this.body.gameObject = this;
+    // gameObject 직접 할당 제거 (Phaser 3.60에서 내부 emit 충돌)
   }
 
   _buildSprites() {
@@ -113,33 +112,29 @@ class Player {
   }
 
   _buildGroundSensor() {
-    const r = CHAR_DISPLAY_SIZE / 2 - 2;
-
-    this._groundSensor = this.scene.matter.add.rectangle(
-      this.body.position.x,
-      this.body.position.y + r + 3,
-      r * 1.5, 6,
-      {
-        isSensor: true,
-        label:    `ground_sensor_${this.playerIndex}`,
-        collisionFilter: { category: 0x0001, mask: 0x0002 },
-      }
-    );
-
-    this.scene.matter.add.constraint(this.body, this._groundSensor, 0, 1);
+    // groundSensor 바디 없이 collisionstart/end로 플레이어 바디 직접 감지
+    // Phaser 3.60에서 sensor + constraint 조합이 gameObject.emit 충돌을 유발하므로
+    // 플레이어 원형 바디가 platform과 충돌하는 것을 직접 감지
 
     this.scene.matter.world.on('collisionstart', (event) => {
       event.pairs.forEach((pair) => {
-        if (pair.bodyA === this._groundSensor || pair.bodyB === this._groundSensor) {
-          this._groundContacts++;
+        const isPlayer = pair.bodyA === this.body || pair.bodyB === this.body;
+        const other    = pair.bodyA === this.body ? pair.bodyB : pair.bodyA;
+        if (isPlayer && other.isStatic) {
+          // 바닥 충돌인지 확인: other가 플레이어 아래에 있을 때만
+          const dy = other.position.y - this.body.position.y;
+          if (dy > 0) this._groundContacts++;
         }
       });
     });
 
     this.scene.matter.world.on('collisionend', (event) => {
       event.pairs.forEach((pair) => {
-        if (pair.bodyA === this._groundSensor || pair.bodyB === this._groundSensor) {
-          this._groundContacts = Math.max(0, this._groundContacts - 1);
+        const isPlayer = pair.bodyA === this.body || pair.bodyB === this.body;
+        const other    = pair.bodyA === this.body ? pair.bodyB : pair.bodyA;
+        if (isPlayer && other.isStatic) {
+          const dy = other.position.y - this.body.position.y;
+          if (dy > 0) this._groundContacts = Math.max(0, this._groundContacts - 1);
         }
       });
     });
@@ -368,7 +363,6 @@ class Player {
 
   destroy() {
     try { this.scene.matter.world.remove(this.body); } catch (_) {}
-    try { this.scene.matter.world.remove(this._groundSensor); } catch (_) {}
     this.charSprite?.destroy();
     this.gunSprite?.destroy();
   }

@@ -113,3 +113,223 @@ body {
   margin-top: 8px;
   letter-spacing: 0.1em;
 }
+/* ═══════════════════════════════════════════════
+   시작 화면
+   ═══════════════════════════════════════════════ */
+
+#start-screen {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+#start-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 800px;
+  padding: 0 24px;
+}
+
+/* 타이틀 */
+#game-title {
+  font-size: 52px;
+  font-weight: bold;
+  letter-spacing: 0.25em;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 0 30px rgba(79, 195, 247, 0.6);
+  margin: 0;
+}
+
+#game-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.12em;
+  margin-top: 6px;
+}
+
+/* P1/P2 나란히 배치 */
+.setup-row {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.player-setup {
+  flex: 1;
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.p1-setup {
+  background: rgba(79, 195, 247, 0.06);
+  border: 1px solid rgba(79, 195, 247, 0.2);
+}
+
+.p2-setup {
+  background: rgba(255, 112, 67, 0.06);
+  border: 1px solid rgba(255, 112, 67, 0.2);
+}
+
+.player-label {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+}
+
+.p1-label { color: #4fc3f7; }
+.p2-label { color: #ff7043; }
+
+.controls-hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+}
+
+.controls-hint kbd {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.keyword-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.keyword-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.keyword-input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.keyword-input:focus {
+  border-color: rgba(255,255,255,0.4);
+}
+
+.add-keyword-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.add-keyword-btn:hover { opacity: 0.8; }
+
+.p1-add { background: #4fc3f7; color: #0a0a0a; }
+.p2-add { background: #ff7043; color: #fff; }
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.keyword-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.p1-tag { background: rgba(79, 195, 247, 0.18); color: #4fc3f7; border: 1px solid rgba(79,195,247,0.3); }
+.p2-tag { background: rgba(255, 112, 67, 0.18); color: #ff7043; border: 1px solid rgba(255,112,67,0.3); }
+
+.keyword-tag button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 0;
+  line-height: 1;
+}
+
+.keyword-tag button:hover { opacity: 1; }
+
+/* VS 구분선 */
+#vs-divider {
+  padding: 0 20px;
+  font-size: 22px;
+  font-weight: bold;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.15em;
+  align-self: center;
+  margin-top: 20px;
+}
+
+/* 에러 메시지 */
+#start-error {
+  min-height: 20px;
+  font-size: 13px;
+  color: #ff5252;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* 시작 버튼 */
+#start-btn {
+  padding: 13px 48px;
+  background: #4fc3f7;
+  border: none;
+  border-radius: 30px;
+  color: #0a0a0a;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+#start-btn:hover {
+  transform: scale(1.04);
+  opacity: 0.9;
+}
+
+#start-tip {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.06em;
+  text-align: center;
+}

@@ -1,5 +1,4 @@
 /**
- * game.js
  * ─────────────────────────────────────────────────────────────────
  * - BootScene: 에셋 로드
  * - GameScene: 이미지 기반 배경/지형, BulletSystem + NetworkManager 통합
@@ -20,11 +19,11 @@ class BootScene extends Phaser.Scene {
   constructor() { super({ key: 'BootScene' }); }
 
   preload() {
-    this.load.image('background', 'assets/background.png');
-    this.load.image('floor',      'assets/floor.png');
-    this.load.image('wall',       'assets/wall.png');
-    this.load.image('char',       'assets/Char.png');
-    this.load.image('gun',        'assets/Gun.png');
+    this.load.image('background', '../assets/images/background.png');
+    this.load.image('floor',      '../assets/images/floor.png');
+    this.load.image('wall',       '../assets/images/wall.png');
+    this.load.image('char',       '../assets/images/Char.png');
+    this.load.image('gun',        '../assets/images/Gun.png');
 
     const loadText = this.add.text(
       GAME_WIDTH / 2, GAME_HEIGHT / 2,
@@ -312,4 +311,7 @@ const config = {
   },
 };
 
-const game = new Phaser.Game(config);
+// initGame()은 index.html 시작 화면에서 호출
+function initGame() {
+  new Phaser.Game(config);
+}
