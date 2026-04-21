@@ -75,35 +75,26 @@ class SpeechManager {
 
   // ── 시작 ──────────────────────────────────────────────────────
 
-  /** P1, P2 음성 인식 모두 시작 (시작 화면 키워드 반영) */
+  /** 음성 인식 시작 — 마이크 1개이므로 인스턴스 1개로 P1/P2 키워드 동시 감지 */
   startAll() {
-    // 시작 화면에서 입력한 키워드가 있으면 덮어씌움
+    if (!this._supported) return;
+
+    // 시작 화면 키워드 반영
     if (window.VOICE_KEYWORDS) {
       SPEECH_CONFIG.P1_FIRE_KEYWORDS = window.VOICE_KEYWORDS.p1;
       SPEECH_CONFIG.P2_FIRE_KEYWORDS = window.VOICE_KEYWORDS.p2;
       console.log('[Speech] P1 키워드:', SPEECH_CONFIG.P1_FIRE_KEYWORDS);
       console.log('[Speech] P2 키워드:', SPEECH_CONFIG.P2_FIRE_KEYWORDS);
     }
-    this.startP1();
-    this.startP2();
-  }
 
-  /** P1 음성 인식 시작 */
-  startP1() {
-    if (!this._supported) return;
-    this._p1Rec = this._createRecognition(0);
-    this._p1Rec.start();
+    // 인스턴스 1개로 P1+P2 동시 감지 (마이크 1개 환경)
+    this._sharedRec = this._createSharedRecognition();
+    this._sharedRec.start();
     this._startVU();
-    console.log('[Speech] P1 recognition started');
   }
 
-  /** P2 음성 인식 시작 */
-  startP2() {
-    if (!this._supported) return;
-    this._p2Rec = this._createRecognition(1);
-    this._p2Rec.start();
-    console.log('[Speech] P2 recognition started');
-  }
+  startP1() { /* startAll()로 통합 */ }
+  startP2() { /* startAll()로 통합 */ }
 
   // ── SpeechRecognition 인스턴스 생성 ───────────────────────────
 
@@ -135,6 +126,72 @@ class SpeechManager {
 
     rec.onend = () => {
       // 자동 재시작 (연속 인식 유지)
+      if (!this._destroyed) {
+        try { rec.start(); } catch (_) {}
+      }
+    };
+
+    return rec;
+  }
+
+  // ── 공유 인식 인스턴스 (마이크 1개용) ───────────────────────────
+
+  _createSharedRecognition() {
+    const rec = new this._SpeechRecognition();
+    rec.lang             = SPEECH_CONFIG.LANG;
+    rec.continuous       = true;
+    rec.interimResults   = true;   // interim 결과도 체크해서 반응 빠르게
+    rec.maxAlternatives  = 5;      // 후보 5개까지 전부 매칭 시도
+
+    rec.onresult = (event) => {
+      const result = event.results[event.results.length - 1];
+
+      // 모든 후보(alternatives) 텍스트를 합쳐서 한 번에 매칭
+      // → API가 잘못 들어도 다른 후보에서 잡힐 가능성이 높아짐
+      const transcripts = [];
+      for (let i = 0; i < result.length; i++) {
+        transcripts.push(result[i].transcript.trim().toLowerCase());
+      }
+      const combined = transcripts.join(' ');
+      console.log('[Speech] 인식 후보:', transcripts);
+
+      const now = Date.now();
+
+      // ── P1 키워드 체크 ──
+      if (now - this._p1LastFire >= SPEECH_CONFIG.FIRE_COOLDOWN) {
+        const p1matched = SPEECH_CONFIG.P1_FIRE_KEYWORDS.some(kw =>
+          transcripts.some(t => t.includes(kw))
+        );
+        if (p1matched) {
+          console.log('[Speech] P1 FIRE!');
+          this._p1LastFire = now;
+          this.players[0]?.fire();
+          this._flashIndicator('P1');
+        }
+      }
+
+      // ── P2 키워드 체크 ──
+      if (now - this._p2LastFire >= SPEECH_CONFIG.FIRE_COOLDOWN) {
+        const p2matched = SPEECH_CONFIG.P2_FIRE_KEYWORDS.some(kw =>
+          transcripts.some(t => t.includes(kw))
+        );
+        if (p2matched) {
+          console.log('[Speech] P2 FIRE!');
+          this._p2LastFire = now;
+          this.players[1]?.fire();
+          this._flashIndicator('P2');
+        }
+      }
+    };
+
+    rec.onerror = (e) => {
+      console.warn('[Speech] error:', e.error);
+      if (e.error === 'not-allowed') {
+        alert('마이크 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.');
+      }
+    };
+
+    rec.onend = () => {
       if (!this._destroyed) {
         try { rec.start(); } catch (_) {}
       }
@@ -224,8 +281,9 @@ class SpeechManager {
 
   // ── HUD 인디케이터 ────────────────────────────────────────────
 
-  _flashIndicator() {
+  _flashIndicator(who = '') {
     if (!this._indicator) return;
+    this._indicator.textContent = who ? `🎤 ${who} FIRE!` : '🎤 FIRE';
     this._indicator.classList.add('active');
     clearTimeout(this._indicatorTimer);
     this._indicatorTimer = setTimeout(() => {
@@ -240,6 +298,7 @@ class SpeechManager {
 
     try { this._p1Rec?.stop(); } catch (_) {}
     try { this._p2Rec?.stop(); } catch (_) {}
+    try { this._sharedRec?.stop(); } catch (_) {}
 
     this._audioCtx?.close();
     this._vuGfx?.destroy();

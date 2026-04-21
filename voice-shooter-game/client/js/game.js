@@ -67,7 +67,8 @@ class GameScene extends Phaser.Scene {
 
   _setupWorld() {
     this.matter.world.setGravity(0, GRAVITY_Y);
-    this.matter.world.setBounds(0, 0, GAME_WIDTH, GAME_HEIGHT, 32, true, true, false, true);
+    // 아래쪽 경계만 (좌우는 player.js update()에서 클램프 처리)
+    this.matter.world.setBounds(0, 0, GAME_WIDTH, GAME_HEIGHT, 32, false, false, false, true);
 
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background')
       .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
@@ -90,10 +91,10 @@ class GameScene extends Phaser.Scene {
       { x: GAME_WIDTH / 2, y: 140,              w: 160,        h: 18,  angle: 0  },
     ];
 
-    floorDefs.forEach(p => {
-      this.matter.add.rectangle(p.x, p.y, p.w, p.h, {
+    floorDefs.forEach((p, idx) => {
+      const body = this.matter.add.rectangle(p.x, p.y, p.w, p.h, {
         isStatic:    true,
-        label:       'platform',
+        label:       idx === 0 ? 'ground' : 'platform',
         friction:    0.4,
         restitution: 0.1,
         angle:       Phaser.Math.DegToRad(p.angle ?? 0),
@@ -102,7 +103,9 @@ class GameScene extends Phaser.Scene {
           mask:     0x0001 | 0x0004,
         },
       });
-      this._platforms.push({ x: p.x, y: p.y, w: p.w, h: p.h, angle: p.angle ?? 0 });
+      // 공중 플랫폼은 단방향 (위에서만 충돌) 플래그 저장
+      body.isOneWay = idx !== 0;
+      this._platforms.push({ x: p.x, y: p.y, w: p.w, h: p.h, angle: p.angle ?? 0, body, isOneWay: body.isOneWay });
 
       this.add.tileSprite(p.x, p.y, p.w, p.h, 'floor')
         .setAngle(p.angle ?? 0)
@@ -110,10 +113,7 @@ class GameScene extends Phaser.Scene {
         .setAlpha(p.y > GAME_HEIGHT - 50 ? 0.85 : 1);
     });
 
-    // 좌우 벽 시각
-    const wallW = 32;
-    this.add.tileSprite(wallW / 2,            GAME_HEIGHT / 2, wallW, GAME_HEIGHT, 'wall').setDepth(2);
-    this.add.tileSprite(GAME_WIDTH - wallW/2, GAME_HEIGHT / 2, wallW, GAME_HEIGHT, 'wall').setDepth(2);
+    // 좌우 벽 없음 — player.js update()에서 화면 밖 클램프 처리
   }
 
   // ── 플레이어 스폰 ─────────────────────────────────────────────
@@ -121,18 +121,18 @@ class GameScene extends Phaser.Scene {
   _spawnPlayers() {
     // 멀티 환경에서는 NetworkManager._onRoomJoined()가 isLocal을 재설정함
     // 초기엔 둘 다 isLocal=true 로 스폰 (오프라인 테스트 호환)
-    this.players[0] = new Player(this, 200, 300, {
+    this.players[0] = new Player(this, 220, 300, {
       playerIndex: 0,
       isLocal:     true,
       tint:        0xffffff,
-      controls:    { left: 'A', right: 'D', jump: 'W' },
+      controls:    { left: 'A', right: 'D', jump: 'W', down: 'S' },
     });
 
-    this.players[1] = new Player(this, 760, 300, {
+    this.players[1] = new Player(this, 740, 300, {
       playerIndex: 1,
       isLocal:     true,
       tint:        0xff8c69,
-      controls:    { left: 'LEFT', right: 'RIGHT', jump: 'UP' },
+      controls:    { left: 'LEFT', right: 'RIGHT', jump: 'UP', down: 'DOWN' },
     });
   }
 

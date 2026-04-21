@@ -23,14 +23,10 @@
         <!-- P1 -->
         <div class="player-setup p1-setup">
           <div class="player-label p1-label">P1</div>
-          <div class="controls-hint">이동 <kbd>A</kbd><kbd>D</kbd> &nbsp; 점프 <kbd>W</kbd></div>
+          <div class="controls-hint">이동 <kbd>A</kbd><kbd>D</kbd> &nbsp; 점프 <kbd>W</kbd> &nbsp; 내려가기 <kbd>S</kbd></div>
           <div class="keyword-section">
             <label class="keyword-label">발사 키워드</label>
-            <div class="keyword-inputs">
-              <input id="p1-input" class="keyword-input" type="text" placeholder="예: 불" maxlength="10" />
-              <button class="add-keyword-btn p1-add" onclick="addKeyword(0)">추가</button>
-            </div>
-            <div class="keyword-tags" id="p1-tags"></div>
+            <input id="p1-input" class="keyword-input" type="text" placeholder="예: 불" maxlength="10" />
           </div>
         </div>
 
@@ -39,21 +35,17 @@
         <!-- P2 -->
         <div class="player-setup p2-setup">
           <div class="player-label p2-label">P2</div>
-          <div class="controls-hint">이동 <kbd>◀</kbd><kbd>▶</kbd> &nbsp; 점프 <kbd>▲</kbd></div>
+          <div class="controls-hint">이동 <kbd>◀</kbd><kbd>▶</kbd> &nbsp; 점프 <kbd>▲</kbd> &nbsp; 내려가기 <kbd>▼</kbd></div>
           <div class="keyword-section">
             <label class="keyword-label">발사 키워드</label>
-            <div class="keyword-inputs">
-              <input id="p2-input" class="keyword-input" type="text" placeholder="예: 빵" maxlength="10" />
-              <button class="add-keyword-btn p2-add" onclick="addKeyword(1)">추가</button>
-            </div>
-            <div class="keyword-tags" id="p2-tags"></div>
+            <input id="p2-input" class="keyword-input" type="text" placeholder="예: 빵" maxlength="10" />
           </div>
         </div>
       </div>
 
       <div id="start-error"></div>
-      <button id="start-btn" onclick="startGame()">🎤 게임 시작</button>
-      <p id="start-tip">각 플레이어 키워드를 최소 1개 이상 입력하세요 • 서로 다른 단어를 사용하세요</p>
+      <button id="start-btn" onclick="startGame()">확인</button>
+      <p id="start-tip">서로 다른 키워드를 입력하세요</p>
     </div>
   </div>
 
@@ -75,59 +67,28 @@
   <script src="js/game.js"></script>
 
   <script>
-    const keywords = { 0: [], 1: [] };
-
-    // 엔터로 추가
-    ['p1-input', 'p2-input'].forEach((id, idx) => {
-      document.getElementById(id).addEventListener('keydown', e => {
-        if (e.key === 'Enter') addKeyword(idx);
-      });
-    });
-
-    function addKeyword(pi) {
-      const input = document.getElementById(`p${pi + 1}-input`);
-      const word  = input.value.trim().toLowerCase();
-      if (!word) return;
-      if (keywords[pi].includes(word)) { input.value = ''; return; }
-      keywords[pi].push(word);
-      input.value = '';
-      renderTags(pi);
-      setError('');
-    }
-
-    function removeKeyword(pi, word) {
-      keywords[pi] = keywords[pi].filter(k => k !== word);
-      renderTags(pi);
-    }
-
-    function renderTags(pi) {
-      const el = document.getElementById(`p${pi + 1}-tags`);
-      el.innerHTML = keywords[pi].map(w =>
-        `<span class="keyword-tag p${pi + 1}-tag">${w}<button onclick="removeKeyword(${pi},'${w}')">✕</button></span>`
-      ).join('');
-    }
-
     function setError(msg) {
       document.getElementById('start-error').textContent = msg;
     }
 
+    ['p1-input', 'p2-input'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') startGame();
+      });
+    });
+
     function startGame() {
-      if (keywords[0].length === 0) { setError('P1 키워드를 1개 이상 입력해주세요!'); return; }
-      if (keywords[1].length === 0) { setError('P2 키워드를 1개 이상 입력해주세요!'); return; }
+      const p1kw = document.getElementById('p1-input').value.trim().toLowerCase();
+      const p2kw = document.getElementById('p2-input').value.trim().toLowerCase();
 
-      const overlap = keywords[0].filter(k => keywords[1].includes(k));
-      if (overlap.length > 0) {
-        setError(`⚠ "${overlap.join(', ')}" 키워드가 겹쳐요! 서로 다른 단어를 쓰세요.`);
-        return;
-      }
+      if (!p1kw) { setError('P1 키워드를 입력해주세요!'); return; }
+      if (!p2kw) { setError('P2 키워드를 입력해주세요!'); return; }
+      if (p1kw === p2kw) { setError('⚠ 키워드가 같아요! 서로 다른 단어를 쓰세요.'); return; }
 
-      // speech.js가 읽을 전역 변수에 키워드 저장
-      window.VOICE_KEYWORDS = { p1: keywords[0], p2: keywords[1] };
+      window.VOICE_KEYWORDS = { p1: [p1kw], p2: [p2kw] };
 
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('game-container').style.display = 'block';
-
-      // game.js의 initGame() 호출
       initGame();
     }
   </script>
